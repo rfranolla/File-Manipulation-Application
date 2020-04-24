@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
@@ -181,7 +183,6 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
         }
         chooser.setDialogTitle("Select Switch File");
         chooser.setFileFilter(new FileNameExtensionFilter(".txt", "txt"));
-        chooser.setApproveButtonText("Open");
         int result = chooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             File f = chooser.getSelectedFile();
@@ -215,6 +216,7 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
             return;
 	}
         final String customer = customerList.getSelectedValue();
+        
         if (Objects.isNull(customer)){
             JOptionPane.showMessageDialog(this, "Please select a customer");
             return;
@@ -231,7 +233,7 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
             UIManager.put("FileChooser.lookInLabelText", "Save In");
             SwingUtilities.updateComponentTreeUI(chooser);
             chooser.setFileFilter(new FileNameExtensionFilter(".txt", "txt"));
-            chooser.setSelectedFile(new File(customer));
+            chooser.setSelectedFile(new File(customer.equals("TEST") ? (customer + "1") : customer));
             chooser.setAcceptAllFileFilterUsed(false);
             int result = chooser.showSaveDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -318,6 +320,7 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                         }
                     }
                     // TODO: FIX, It skips every other neighbor case
+                    /*
                     else if (line.startsWith("  neighbor")){
                         final ArrayList<String> list = new ArrayList<String>();
                         String temp = line;
@@ -343,11 +346,11 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                         line = temp;
                         
                     }
+                    */
                 }
             } while (!done);
             myWriter.close();
-            //System.out.println("Successfully wrote to the file.");
-        } catch (IOException e) {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "An error occurred while writing to file");
         }
         
@@ -393,8 +396,10 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
             chooser.setCurrentDirectory(new File(switchFilePath));
         }
         chooser.setFileFilter(new FileNameExtensionFilter(".xlsx", "xlsx"));
-        chooser.setDialogTitle("Select Lookup File");
-        chooser.setApproveButtonText("Open");
+        chooser.setDialogTitle("Select Default Lookup File");
+        //Update UI
+        UIManager.put("FileChooser.lookInLabelText", "Look In");
+        SwingUtilities.updateComponentTreeUI(chooser);
         String excelFile = "";
         int result = chooser.showOpenDialog(this);
         final File f;
@@ -410,8 +415,52 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
             //System.out.println("Cancel was selected");
             return;
         }
+        
+        //creat new look up file
+        final JFileChooser chooser2 = new JFileChooser();
+        if (!Objects.isNull(switchFilePath)){
+            chooser2.setCurrentDirectory(new File(switchFilePath));
+        }
+        chooser2.setFileFilter(new FileNameExtensionFilter(".xlsx", "xlsx"));
+        chooser2.setDialogTitle("Save Customer Look Up As");
+        //Update UI
+        UIManager.put("FileChooser.lookInLabelText", "Save In");
+        SwingUtilities.updateComponentTreeUI(chooser2);
+        chooser2.setSelectedFile(new File(customer.equals("TEST") ? (customer + "1 Look Up") : customer + " Look Up"));
+        chooser2.setAcceptAllFileFilterUsed(false);
+        chooser2.setApproveButtonText("Open");
+        String newExcelFile = "";
+        int result2 = chooser2.showSaveDialog(this);
+        final File f2;
+        if (result2 == JFileChooser.APPROVE_OPTION) {
+            f2 = chooser2.getSelectedFile();
+            newExcelFile = f2.getAbsolutePath();
+            if(!newExcelFile.endsWith(".xlsx")) {
+                newExcelFile += ".xlsx";
+            }
+        } else if (result2 == JFileChooser.CANCEL_OPTION) {
+            //System.out.println("Cancel was selected");
+            return;
+        }
+        final File myObj = new File(newExcelFile);
+        if (myObj.exists()){
+            int answer = JOptionPane.showConfirmDialog(this, "The file exists, overwrite?",
+                "Existing file", JOptionPane.YES_NO_CANCEL_OPTION);
+            if (answer != JOptionPane.YES_OPTION) {
+                return;
+            }
+        } else {
+            try {
+                myObj.createNewFile();
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error Creating New File");
+            }
+        }
+            
+            
+        //System.out.println(newExcelFile);
         //edit csv     
-        clearLookUpTable(excelFile);
+        //clearLookUpTable(excelFile);
         try {
             final FileInputStream inputStream = new FileInputStream(new File(excelFile));
             final Workbook workbook = WorkbookFactory.create(inputStream);
@@ -435,17 +484,17 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                 i++;
             } 
             inputStream.close();
-            FileOutputStream outputStream = new FileOutputStream(excelFile);
+            FileOutputStream outputStream = new FileOutputStream(newExcelFile);
             workbook.write(outputStream);
             workbook.close();
             outputStream.close();
              
         } catch (IOException | EncryptedDocumentException ex) {
-            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error Writing to Excel file");
         }
         
         try {
-            java.awt.Desktop.getDesktop().edit(new File(excelFile));
+            java.awt.Desktop.getDesktop().edit(new File(newExcelFile));
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Error Opening Excel file");
         }
@@ -485,11 +534,6 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
 		//System.out.println("There is a problem at one of the lines. Error Number - " +e);
                 JOptionPane.showMessageDialog(this, "There is a problem at one of the lines. " + e.getMessage());
 	    }
-            
-            // end of customer list. 
-            if (line.startsWith("policy-map")){
-                done = true;
-            }
             
             // End of File
             if (line == null || line.length() == 0)
