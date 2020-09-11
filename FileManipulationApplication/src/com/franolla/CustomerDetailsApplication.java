@@ -1,4 +1,4 @@
-package com.tmx;
+package com.franolla;
 
 import java.awt.Image;
 import java.io.BufferedReader;
@@ -54,7 +54,7 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setTitle("Customer Details");
         try {
-            Image i = ImageIO.read(getClass().getResource("tmx_logo.jpg"));
+            Image i = ImageIO.read(getClass().getResource("logo.png"));
             setIconImage(i);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Error setting the icon");
@@ -107,16 +107,16 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
             }
         });
 
-        editCSV.setText("Add to Lookup Table");
+        editCSV.setText("Add to Excel Table");
         editCSV.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editCSVActionPerformed(evt);
             }
         });
 
-        logo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/tmx/0.png"))); // NOI18N
+        logo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/franolla/0.png"))); // NOI18N
 
-        jCurrentSwitchLabel.setText("Current Switch Config:");
+        jCurrentSwitchLabel.setText("Current Selected File:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -138,16 +138,16 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addComponent(selectFile)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
                 .addComponent(logo)
-                .addGap(50, 50, 50))
+                .addGap(25, 25, 25))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(selectFile)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -160,10 +160,8 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                                 .addComponent(getText, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(editCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(logo)))
-                .addContainerGap(34, Short.MAX_VALUE))
+                    .addComponent(logo))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -285,20 +283,20 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                 {
                     // Get information
                     if (line.contains(customer)){
-                        //acessList
-                        if (line.startsWith("ip access-list" )){
+                        // Can be changed as needed depending on structure of the information file
+                        if (line.startsWith("something" )){
                             myWriter.write(line + "\n");
                             line = in.readLine();
-                            while(!line.startsWith("ip access-list ")){
+                            while(!line.startsWith("something")){
                                 myWriter.write(line + "\n");
                                 line = in.readLine();
                             }
                         }
-                        // routemap
-                        else if (line.startsWith("route-map")){
+                        // Can be changed as needed depending on structure of the information file
+                        else if (line.startsWith("something else")){
                             String temp = line+ in.readLine();
-                            temp = temp.replaceAll("permit.*.*match ip multicast group", "");
-                            temp = temp.replaceAll("\\/.*", "");
+                            temp = temp.replaceAll("section to eleminate", "");
+                            temp = temp.replaceAll("regex", "");
                             myWriter.write(temp + "\n");
                         }
                         else{
@@ -306,7 +304,7 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                         }  
                     }
                     
-                    else if (line.startsWith("interface Ethernet")){
+                    else if (line.startsWith("something more")){
                         final String tempLine = line;
                         line = in.readLine();
                         if (line.contains(customer)){
@@ -319,9 +317,9 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                             }
                         }
                     }
-                    // TODO: FIX, It skips every other neighbor case
+                    // TODO: FIX, It skips every other case
                     /*
-                    else if (line.startsWith("  neighbor")){
+                    else if (line.startsWith("  something less")){
                         final ArrayList<String> list = new ArrayList<String>();
                         String temp = line;
                         list.add(line);
@@ -329,7 +327,7 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                         //Need to fix
                         line = in.readLine();
                         while(true){
-                            if (line.startsWith("  neighbor"))
+                            if (line.startsWith("  something less"))
                                 break;
                             list.add(line);
                             if (line.contains(customer)){
@@ -522,7 +520,7 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
 		
 	String line = null;
         boolean done = false;
-        final Pattern custPattern = Pattern.compile("^(ip access-list )([a-zA-z\\d]+)(_IN)");
+        final Pattern custPattern = Pattern.compile("regex pattern");
         
 	do {
             try
@@ -579,7 +577,7 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
 	}
         String line = null;
         boolean done = false;
-        final Pattern pattern = Pattern.compile("(route-map )("+customer+")(_MCAST_POLICY  )(.*)");
+        final Pattern pattern = Pattern.compile("regex pattern");
 	do {
             try
             { // Try to Read the next line from the file
@@ -601,8 +599,8 @@ public class CustomerDetailsApplication extends javax.swing.JFrame {
                 try{
                     if (line.startsWith("route-map") && line.contains(customer)){
                         String temp = line + in.readLine();
-                        temp = temp.replaceAll("permit.*.*match ip multicast group", "");
-                        temp = temp.replaceAll("\\/.*", "");
+                        temp = temp.replaceAll("section to eliminate", "");
+                        temp = temp.replaceAll("regex", "");
                         final Matcher m = pattern.matcher(temp);
                         if (m.matches()){
                             ips.add(m.group(4));
